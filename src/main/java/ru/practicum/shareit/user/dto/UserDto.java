@@ -1,25 +1,23 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.AbstractDto;
+import ru.practicum.shareit.item.model.Item;
 
-/**
- * TODO Sprint add-controllers.
- */
+import java.util.HashSet;
+
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ItemDto extends AbstractDto {
+public class UserDto extends AbstractDto {
 
     private String name;
 
-    private String description;
+    private HashSet<Item> items;
 
-    private boolean isFree;
-
-    private Integer numberOfUses;
+    private String email;
 }
