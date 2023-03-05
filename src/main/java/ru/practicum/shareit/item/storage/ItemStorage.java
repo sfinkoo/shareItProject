@@ -9,7 +9,7 @@ import java.util.List;
 @Component
 public interface ItemStorage {
 
-    ItemDto add(Item item, int idOwner);
+    ItemDto add(Item item);
 
     ItemDto update(Item item, int idOwner);
 

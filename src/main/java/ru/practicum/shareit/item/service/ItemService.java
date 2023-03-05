@@ -11,7 +11,7 @@ public interface ItemService {
 
     ItemDto add(Item item, int idOwner);
 
-    ItemDto update(Item item, int idOwner);
+    ItemDto update(Item item, int idOwner, String itemId);
 
     ItemDto getById(Integer itemId);
 

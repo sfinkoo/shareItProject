@@ -9,9 +9,7 @@ import ru.practicum.shareit.item.mapping.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapping.UserMapper;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,31 +20,28 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemStorage itemStorage;
     private final ItemMapper itemMapper;
-    private final UserMapper userMapper;
-    private final UserStorage userStorage;
+    private final UserService userService;
 
     @Override
     public ItemDto add(Item item, int idOwner) {
-        checkUserId(idOwner);
         item.setOwner(getOwner(idOwner));
-        return itemStorage.add(item, idOwner);
+        return itemStorage.add(item);
     }
 
     @Override
-    public ItemDto update(Item item, int idOwner) {
-        checkUserId(idOwner);
-        item.setOwner(getOwner(idOwner));
-        checkItem(item.getId());
-        return itemStorage.update(item, idOwner);
+    public ItemDto update(Item item, int idOwner, String itemId) {
+        int idItem = Integer.parseInt(itemId);
+        Item itemForUpdate = itemMapper.toEntity(getById(idItem));
+
+        if (item.getAvailable() != itemForUpdate.getAvailable()) {
+            itemForUpdate.setAvailable(item.getAvailable());
+        }
+        return itemStorage.update(itemForUpdate, idOwner);
     }
 
     @Override
     public ItemDto getById(Integer itemId) {
         return itemStorage.getById(itemId);
-    }
-
-    public List<ItemDto> getAll() {
-        return itemStorage.getAll();
     }
 
     @Override
@@ -63,7 +58,7 @@ public class ItemServiceImpl implements ItemService {
         return allItems.stream()
                 .filter(itemDto -> itemDto.getName().equals(text)
                         || itemDto.getDescription().equals(text))
-                .filter(ItemDto::isFree)
+                .filter(ItemDto::isAvailable)
                 .collect(Collectors.toList());
     }
 
@@ -77,16 +72,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private UserDto getOwner(int idOwner) {
-        User user = userStorage.getUserById(idOwner);
-        return userMapper.toDto(user);
-    }
-
-    private void checkUserId(int id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new ResourceException(HttpStatus.NOT_FOUND, "Пользователь с id = " + id + " не найден.");
-        } else if (id < 0) {
-            throw new ResourceException(HttpStatus.BAD_REQUEST, "Отрицательные значения не допустимы.");
-        }
+        return userService.getUserById(idOwner);
     }
 }

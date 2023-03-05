@@ -24,7 +24,7 @@ public class InMemoryItemStorage implements ItemStorage {
     private final ItemMapper itemMapper;
 
     @Override
-    public ItemDto add(Item item, int idOwner) {
+    public ItemDto add(Item item) {
         item.setId(idCreator.createId());
         items.put(item.getId(), item);
         return itemMapper.toDto(item);

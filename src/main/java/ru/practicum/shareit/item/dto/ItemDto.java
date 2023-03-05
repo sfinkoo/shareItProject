@@ -19,7 +19,7 @@ public class ItemDto extends AbstractDto {
 
     private String description;
 
-    private boolean isFree;
+    private boolean available;
 
     private Integer numberOfUses;
 }

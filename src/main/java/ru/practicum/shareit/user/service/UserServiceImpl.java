@@ -31,7 +31,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(User user, Integer userId) {
-        checkUserId(userId);
         user.setId(userId);
         User userForUpdate = userMapper.toEntity(getUserById(user.getId()));
         if (user.getEmail() != null &&
@@ -40,10 +39,12 @@ public class UserServiceImpl implements UserService {
             checkUniqueEmail(emailForUpdate);
             userForUpdate.setEmail(user.getEmail());
         }
+
         if (user.getName() != null &&
                 !user.getName().equals(userForUpdate.getName())) {
             userForUpdate.setName(user.getName());
         }
+
         userStorage.updateUser(userForUpdate, userId);
         log.debug("Информация о пользователе успешно обновлена.");
         return getUserById(userId);
@@ -59,13 +60,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(int id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new ResourceException(HttpStatus.NOT_FOUND, "Пользователь с id = " + id + " не найден.");
-        } else if (id < 0) {
-            throw new ResourceException(HttpStatus.BAD_REQUEST, "Отрицательные значения не допустимы.");
-        }
-        return userMapper.toDto(user);
+        checkUserId(id);
+        return userMapper.toDto(userStorage.getUserById(id));
     }
 
     @Override
@@ -80,8 +76,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkUniqueEmail(String email) {
-        List<UserDto> users = getAllUsers();
-        for (UserDto user : users) {
+        List<User> users = userStorage.getAllUsers();
+        for (User user : users) {
             if (user.getEmail().equals(email)) {
                 throw new ResourceException(HttpStatus.BAD_REQUEST, "Пользователь с такой почтой уже существует.");
             }
@@ -89,8 +85,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkUserId(int id) {
-        UserDto user = getUserById(id);
-        if (user == null) {
+        if (userStorage.getUserById(id) == null) {
             throw new ResourceException(HttpStatus.NOT_FOUND, "Пользователь с id = " + id + " не найден.");
         } else if (id < 0) {
             throw new ResourceException(HttpStatus.BAD_REQUEST, "Отрицательные значения не допустимы.");
