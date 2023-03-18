@@ -5,12 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ResourceException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapping.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +24,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserDto addUser(User user) {
+    public UserDto addUser(User user) throws ValidationException {
         checkUniqueEmail(user.getEmail());
         userStorage.addUser(user);
         log.debug("Пользователь успешно добавлен.");
@@ -30,7 +32,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(User user, Integer userId) {
+    public UserDto updateUser(User user, Integer userId) throws ValidationException {
+        getUserById(userId);
         user.setId(userId);
         User userForUpdate = userMapper.toEntity(getUserById(user.getId()));
         if (user.getEmail() != null &&
@@ -60,13 +63,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(int id) {
-        checkUserId(id);
-        return userMapper.toDto(userStorage.getUserById(id));
+        List<UserDto> users = getAllUsers();
+        Optional<UserDto> foundUser = users.stream()
+                .filter(user -> user.getId() == id)
+                .findFirst();
+        if (foundUser.isEmpty()) {
+            throw new ResourceException(HttpStatus.NOT_FOUND, "Пользователь не найден");
+        }
+        return foundUser.get();
     }
 
     @Override
     public void deleteUserById(int id) {
-        checkUserId(id);
+        getUserById(id);
         userStorage.deleteUserById(id);
     }
 
@@ -75,20 +84,12 @@ public class UserServiceImpl implements UserService {
         userStorage.deleteAllUsers();
     }
 
-    private void checkUniqueEmail(String email) {
+    private void checkUniqueEmail(String email) throws ValidationException {
         List<User> users = userStorage.getAllUsers();
         for (User user : users) {
             if (user.getEmail().equals(email)) {
-                throw new ResourceException(HttpStatus.BAD_REQUEST, "Пользователь с такой почтой уже существует.");
+                throw new ValidationException("Пользователь с такой почтой уже существует.");
             }
-        }
-    }
-
-    private void checkUserId(int id) {
-        if (userStorage.getUserById(id) == null) {
-            throw new ResourceException(HttpStatus.NOT_FOUND, "Пользователь с id = " + id + " не найден.");
-        } else if (id < 0) {
-            throw new ResourceException(HttpStatus.BAD_REQUEST, "Отрицательные значения не допустимы.");
         }
     }
 }

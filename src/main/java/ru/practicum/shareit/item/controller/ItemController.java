@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
@@ -24,8 +25,8 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@Valid @RequestBody Item item, HttpServletRequest request,
-                          @PathVariable String itemId) {
+    public ItemDto update(@RequestBody Item item, HttpServletRequest request,
+                          @PathVariable String itemId) throws ValidationException {
         return itemService.update(item, getIdOwner(request), itemId);
     }
 
@@ -36,7 +37,7 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDto> getAllItemsByOwner(HttpServletRequest request) {
-        return itemService.getAllItemsByOwner(getIdOwner(request));
+         return itemService.getAllItemsByOwner(getIdOwner(request));
     }
 
     @GetMapping("/search")

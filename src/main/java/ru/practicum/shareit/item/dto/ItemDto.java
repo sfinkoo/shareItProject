@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.AbstractDto;
+import ru.practicum.shareit.user.dto.UserDto;
 
 /**
  * TODO Sprint add-controllers.
@@ -14,6 +15,7 @@ import ru.practicum.shareit.AbstractDto;
 @AllArgsConstructor
 @Data
 public class ItemDto extends AbstractDto {
+    private Integer id;
 
     private String name;
 
@@ -22,4 +24,6 @@ public class ItemDto extends AbstractDto {
     private boolean available;
 
     private Integer numberOfUses;
+
+    private UserDto owner;
 }

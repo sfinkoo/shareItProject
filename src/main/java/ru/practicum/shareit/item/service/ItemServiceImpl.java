@@ -8,9 +8,9 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapping.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorage;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,19 +24,34 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto add(Item item, int idOwner) {
-        item.setOwner(getOwner(idOwner));
-        return itemStorage.add(item);
+        item.setOwner(userService.getUserById(idOwner));
+        itemStorage.add(item);
+        return itemStorage.getById(item.getId());
     }
 
     @Override
     public ItemDto update(Item item, int idOwner, String itemId) {
+        item.setOwner(userService.getUserById(idOwner));
+
         int idItem = Integer.parseInt(itemId);
         Item itemForUpdate = itemMapper.toEntity(getById(idItem));
 
-        if (item.getAvailable() != itemForUpdate.getAvailable()) {
+        if (idOwner != itemForUpdate.getOwner().getId()) {
+            throw new ResourceException(HttpStatus.NOT_FOUND, "Неправильный id владельца вещи");
+        }
+
+        if (item.getAvailable() != null) {
             itemForUpdate.setAvailable(item.getAvailable());
         }
-        return itemStorage.update(itemForUpdate, idOwner);
+        if (item.getName() != null) {
+            itemForUpdate.setName(item.getName());
+        }
+        if (item.getDescription() != null) {
+            itemForUpdate.setDescription(item.getDescription());
+        }
+
+        itemStorage.update(itemForUpdate, idOwner);
+        return itemStorage.getById(idItem);
     }
 
     @Override
@@ -46,32 +61,28 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getAllItemsByOwner(int idOwner) {
-        UserDto user = getOwner(idOwner);
-        return user.getItems().stream()
-                .map(itemMapper::toDto)
+        return itemStorage.getAll().stream()
+                .filter(item -> item.getOwner().getId().equals(idOwner))
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<ItemDto> searchItems(String text) {
-        List<ItemDto> allItems = itemStorage.getAll();
-        return allItems.stream()
-                .filter(itemDto -> itemDto.getName().equals(text)
-                        || itemDto.getDescription().equals(text))
+        String textInLowerCase = text.toLowerCase();
+        List<ItemDto> allItems = itemStorage.getAll().stream()
                 .filter(ItemDto::isAvailable)
-                .collect(Collectors.toList());
-    }
-
-    private void checkItem(int id) {
-        ItemDto item = itemStorage.getAll().get(id);
-        if (item == null) {
-            throw new ResourceException(HttpStatus.NOT_FOUND, "Вещь с id = " + id + " не найдена.");
-        } else if (id < 0) {
-            throw new ResourceException(HttpStatus.BAD_REQUEST, "Отрицательные значения не допустимы.");
+                .toList();
+        List<ItemDto> itemsFound = new ArrayList<>();
+        if (text.isEmpty()) {
+            return itemsFound;
         }
-    }
 
-    private UserDto getOwner(int idOwner) {
-        return userService.getUserById(idOwner);
+        for (ItemDto item : allItems) {
+            if (item.getName().toLowerCase().contains(textInLowerCase)
+                    || item.getDescription().toLowerCase().contains(textInLowerCase)) {
+                itemsFound.add(item);
+            }
+        }
+        return itemsFound;
     }
 }

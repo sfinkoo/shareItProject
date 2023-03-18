@@ -15,6 +15,8 @@ import java.util.HashSet;
 @Data
 public class UserDto extends AbstractDto {
 
+    private Integer id;
+
     private String name;
 
     private HashSet<Item> items;

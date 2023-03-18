@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
@@ -11,7 +12,7 @@ public interface ItemService {
 
     ItemDto add(Item item, int idOwner);
 
-    ItemDto update(Item item, int idOwner, String itemId);
+    ItemDto update(Item item, int idOwner, String itemId) throws ValidationException;
 
     ItemDto getById(Integer itemId);
 
