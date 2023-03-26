@@ -71,7 +71,7 @@ public class ItemServiceImpl implements ItemService {
         String textInLowerCase = text.toLowerCase();
         List<ItemDto> allItems = itemStorage.getAll().stream()
                 .filter(ItemDto::isAvailable)
-                .toList();
+                .collect(Collectors.toList());
         List<ItemDto> itemsFound = new ArrayList<>();
         if (text.isEmpty()) {
             return itemsFound;
