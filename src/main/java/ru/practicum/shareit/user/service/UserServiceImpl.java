@@ -7,13 +7,11 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ResourceException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapping.UserMapper;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -21,21 +19,18 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
-    private final UserMapper userMapper;
 
     @Override
-    public UserDto addUser(User user) throws ValidationException {
+    public UserDto addUser(@Valid UserDto user) throws ValidationException {
         checkUniqueEmail(user.getEmail());
-        userStorage.addUser(user);
-        log.debug("Пользователь успешно добавлен.");
-        return userMapper.toDto(user);
+        return userStorage.addUser(user);
     }
 
     @Override
-    public UserDto updateUser(User user, Integer userId) throws ValidationException {
+    public UserDto updateUser(UserDto user, Integer userId) throws ValidationException {
         getUserById(userId);
         user.setId(userId);
-        User userForUpdate = userMapper.toEntity(getUserById(user.getId()));
+        UserDto userForUpdate = getUserById(user.getId());
         if (user.getEmail() != null &&
                 !user.getEmail().equals(userForUpdate.getEmail())) {
             String emailForUpdate = user.getEmail();
@@ -55,10 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAllUsers() {
-        return userStorage.getAllUsers()
-                .stream()
-                .map(userMapper::toDto)
-                .collect(Collectors.toList());
+        return userStorage.getAllUsers();
     }
 
     @Override
@@ -85,11 +77,13 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkUniqueEmail(String email) throws ValidationException {
-        List<User> users = userStorage.getAllUsers();
-        for (User user : users) {
-            if (user.getEmail().equals(email)) {
-                throw new ValidationException("Пользователь с такой почтой уже существует.");
-            }
+        List<UserDto> users = userStorage.getAllUsers();
+        Optional<UserDto> originUser = users.stream()
+                .filter(userDto -> userDto.getEmail().equals(email))
+                .findFirst();
+
+        if (originUser.isPresent()) {
+            throw new ValidationException("Пользователь с такой почтой уже существует.");
         }
     }
 }

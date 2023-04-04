@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapping.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -24,16 +25,16 @@ public class InMemoryItemStorage implements ItemStorage {
     private final ItemMapper itemMapper;
 
     @Override
-    public ItemDto add(Item item) {
+    public ItemDto add(@Valid ItemDto item) {
         item.setId(idCreator.createId());
-        items.put(item.getId(), item);
-        return itemMapper.toDto(item);
+        items.put(item.getId(), itemMapper.toEntity(item));
+        return getById(item.getId());
     }
 
     @Override
-    public ItemDto update(Item item, int idOwner) {
-        items.put(item.getId(), item);
-        return itemMapper.toDto(item);
+    public ItemDto update(ItemDto item, int idOwner) {
+        items.put(item.getId(), itemMapper.toEntity(item));
+        return getById(item.getId());
     }
 
     @Override

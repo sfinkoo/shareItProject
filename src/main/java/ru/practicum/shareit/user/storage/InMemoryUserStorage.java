@@ -4,11 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.IdCreator;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapping.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.ArrayList;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -16,27 +20,31 @@ import java.util.List;
 public class InMemoryUserStorage implements UserStorage {
 
     private final IdCreator idCreator = new IdCreator();
-    private final HashMap<Integer, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new HashMap<>();
+    private final UserMapper userMapper;
 
     @Override
-    public User addUser(User user) {
+    public UserDto addUser(@Valid UserDto user) {
         user.setId(idCreator.createId());
-        return users.put(user.getId(), user);
+        users.put(user.getId(), userMapper.toEntity(user));
+        return getUserById(user.getId());
     }
 
     @Override
-    public User updateUser(User user, Integer userId) {
-        return users.put(userId, user);
+    public UserDto updateUser(UserDto user, Integer userId) {
+        User userInsert = users.put(userId, userMapper.toEntity(user));
+        return userMapper.toDto(userInsert);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
+    public List<UserDto> getAllUsers() {
+        return users.values().stream()
+                .map(userMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
-    public User getUserById(int id) {
-        return users.get(id);
+    public UserDto getUserById(int id) {
+        return userMapper.toDto(users.get(id));
     }
 
     @Override

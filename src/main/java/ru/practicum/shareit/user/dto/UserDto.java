@@ -7,9 +7,12 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.AbstractDto;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.HashSet;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Set;
 
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -17,9 +20,14 @@ public class UserDto extends AbstractDto {
 
     private Integer id;
 
+    @NotNull
+    @NotBlank
+    @Email
+    private String email;
+
+    @NotNull
+    @NotBlank
     private String name;
 
-    private HashSet<Item> items;
-
-    private String email;
+    private Set<Item> items;
 }

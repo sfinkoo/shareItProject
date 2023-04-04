@@ -5,11 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ResourceException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.mapping.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,22 +18,20 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemStorage itemStorage;
-    private final ItemMapper itemMapper;
     private final UserService userService;
 
     @Override
-    public ItemDto add(Item item, int idOwner) {
+    public ItemDto add(@Valid ItemDto item, int idOwner) {
         item.setOwner(userService.getUserById(idOwner));
-        itemStorage.add(item);
-        return itemStorage.getById(item.getId());
+        return itemStorage.add(item);
     }
 
     @Override
-    public ItemDto update(Item item, int idOwner, String itemId) {
+    public ItemDto update(ItemDto item, int idOwner, String itemId) {
         item.setOwner(userService.getUserById(idOwner));
 
         int idItem = Integer.parseInt(itemId);
-        Item itemForUpdate = itemMapper.toEntity(getById(idItem));
+        ItemDto itemForUpdate = getById(idItem);
 
         if (idOwner != itemForUpdate.getOwner().getId()) {
             throw new ResourceException(HttpStatus.NOT_FOUND, "Неправильный id владельца вещи");
@@ -50,8 +47,7 @@ public class ItemServiceImpl implements ItemService {
             itemForUpdate.setDescription(item.getDescription());
         }
 
-        itemStorage.update(itemForUpdate, idOwner);
-        return itemStorage.getById(idItem);
+        return itemStorage.update(itemForUpdate, idOwner);
     }
 
     @Override
@@ -70,7 +66,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> searchItems(String text) {
         String textInLowerCase = text.toLowerCase();
         List<ItemDto> allItems = itemStorage.getAll().stream()
-                .filter(ItemDto::isAvailable)
+                .filter(ItemDto::getAvailable)
                 .collect(Collectors.toList());
         List<ItemDto> itemsFound = new ArrayList<>();
         if (text.isEmpty()) {

@@ -27,7 +27,7 @@ public class ErrorHandler {
     @ExceptionHandler()
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleHappinessOverflow(Throwable throwable) {
-        log.debug("Непредвиденная ошибка.");
+        log.debug("Непредвиденная ошибка: {}", throwable.getMessage());
         return new ErrorResponse("Произошла непредвиденная ошибка.");
     }
 }

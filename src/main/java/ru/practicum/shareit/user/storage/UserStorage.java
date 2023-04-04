@@ -1,20 +1,21 @@
 package ru.practicum.shareit.user.storage;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Component
 public interface UserStorage {
 
-    User addUser(User user);
+    UserDto addUser(@Valid UserDto user);
 
-    User updateUser(User user, Integer id);
+    UserDto updateUser(UserDto user, Integer id);
 
-    List<User> getAllUsers();
+    List<UserDto> getAllUsers();
 
-    User getUserById(int id);
+    UserDto getUserById(int id);
 
     void deleteUserById(int id);
 

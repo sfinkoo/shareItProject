@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -16,18 +14,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ItemController {
 
+    private final String idOwnerInHeader = "X-Sharer-User-Id";
     private final ItemService itemService;
 
 
     @PostMapping
-    public ItemDto add(@Valid @RequestBody Item item, HttpServletRequest request) {
-        return itemService.add(item, getIdOwner(request));
+    public ItemDto add(@Valid @RequestBody ItemDto item, @RequestHeader(idOwnerInHeader) Integer idOwner) {
+        return itemService.add(item, idOwner);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestBody Item item, HttpServletRequest request,
+    public ItemDto update(@RequestBody ItemDto item, @RequestHeader(idOwnerInHeader) Integer idOwner,
                           @PathVariable String itemId) throws ValidationException {
-        return itemService.update(item, getIdOwner(request), itemId);
+        return itemService.update(item, idOwner, itemId);
     }
 
     @GetMapping("/{itemId}")
@@ -36,16 +35,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllItemsByOwner(HttpServletRequest request) {
-         return itemService.getAllItemsByOwner(getIdOwner(request));
+    public List<ItemDto> getAllItemsByOwner(@RequestHeader(idOwnerInHeader) Integer idOwner) {
+         return itemService.getAllItemsByOwner(idOwner);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestParam String text) {
         return itemService.searchItems(text);
-    }
-
-    private int getIdOwner(HttpServletRequest request) {
-        return Integer.parseInt(request.getHeader("X-Sharer-User-Id"));
     }
 }

@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.model.Item;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -28,5 +28,5 @@ public class User {
     @NotBlank
     private String name;
 
-    private HashSet<Item> items;
+    private Set<Item> items;
 }
