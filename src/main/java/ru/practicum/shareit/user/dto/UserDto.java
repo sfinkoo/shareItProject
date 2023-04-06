@@ -1,36 +1,33 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.AbstractDto;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.item.model.Item;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ItemDto extends AbstractDto {
+public class UserDto extends AbstractDto {
+
     private Integer id;
+
+    @NotNull
+    @NotBlank
+    @Email
+    private String email;
 
     @NotNull
     @NotBlank
     private String name;
 
-    @NotNull
-    @NotBlank
-    private String description;
-
-    private UserDto owner;
-
-    @NotNull
-    private Boolean available;
-
-    @Positive
-    private Integer numberOfUses;
+    private Set<Item> items;
 }
